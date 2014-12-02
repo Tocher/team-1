@@ -6,13 +6,20 @@
 
 Collaborative real-time code editor
 
+## Изменения
+* добавлена минификация файлов
+* добавлена обработка на одновременное редактирование
+* теперь можно видеть выделения других пользователей
+* авторизация через github [в процессе]
+
 ## Installing and running
 
 Navigate to the app folder and type following commands:
 
+* `node start.js` -- install all dependecies, run gulp and run server
 * `npm install`  -- install all dependencies from package.json
 * `bower install` -- install all dependencies from bower.json
-* `npm run make` -- run gulp
+* `npm run gulp` -- run gulp
 * `node server.js` -- run server
 
 ## Dependencies:
