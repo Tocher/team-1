@@ -32,63 +32,61 @@ gulp.task('config', function () {
 })
 
 gulp.task('index.min.html', function () {
-  var opts = {comments:true,spare:true};
+  var opts = {comments:true,spare:true,quotes:true};
   streamqueue(
     { objectMode: true }
+    // Html
     , gulp.src('blocks/**/*.html')
       .pipe(minifyHTML(opts))
       .pipe(gulp.dest('./dist/html'))
-    , gulp.src(['blocks/**/*.css', 'libs/codemirror/lib/codemirror.css'])
-      .pipe(minifyCSS({keepBreaks:false}))
-      .pipe(gulp.dest('./dist/css'))
-    , gulp.src(
-      [ 'blocks/**/*.js'
-      , 'libs/codemirror/lib/codemirror.js'
-      , 'libs/share-codemirror/share-codemirror.js'
-      , 'libs/codemirror/mode/javascript/javascript.js'
-      ]
-    )
-      .pipe(uglify())
-      .pipe(gulp.dest('dist/js'))
-    , gulp.src('dist/html/page/page.html')
     , gulp
       .src('dist/html/**/*.html')
-      .pipe(gulpIgnore.exclude('**/page.html'))
       .pipe(wrap('<script '
           + 'type="template" '
           + 'id="<%= file.path.replace(/^.*\\/([^/]+)$/, \'$1\') %>">'
           + '<%= file.contents %>'
           + '</script>'
       ))
-    , gulp
-        .src(
-          [ 'dist/css/codemirror.css'
-          , 'libs/switchery/dist/switchery.min.css'
-          , 'dist/css/**/*.css'
-          ]
-        )
-        .pipe(concat('index.css'))
-        .pipe(autoprefixer(
-          { browsers: ['last 3 versions']
-          , cascade: true
-          }
-        ))
-        .pipe(wrap('<style><%= contents %></style>'))
+    // Css
+    , gulp.src(
+        [ 'libs/codemirror/lib/codemirror.css'
+        , 'libs/switchery/dist/switchery.min.css'
+        , 'blocks/**/*.css'
+        ]
+      )
+      .pipe(minifyCSS(
+        { keepBreaks: false
+        }
+      ))
+      .pipe(concat('index.css'))
+      .pipe(autoprefixer(
+        { browsers: ['last 3 versions']
+        , cascade: true
+        }
+      ))
+      .pipe(wrap('<style><%= file.contents %></style>'))
+    // Js
     , gulp
       .src(
         [ 'libs/jquery/dist/jquery.min.js'
-        , 'libs/lodash/dist/lodash.min.js'
-        , 'dist/js/codemirror.js'
+        , 'libs/codemirror/lib/codemirror.js'
         , 'node_modules/share/webclient/share.js'
-        , 'dist/js/share-codemirror.js'
-        , 'dist/js/javascript.js'
+        , 'libs/share-codemirror/share-codemirror.js'
+        , 'libs/codemirror/mode/javascript/javascript.js'
+        , 'libs/lodash/dist/lodash.min.js'
         , 'libs/switchery/dist/switchery.min.js'
-        , 'dist/js/page/page.js'
-        , 'dist/js/**/*.js'
         ]
       )
+      .pipe(wrap('<script><%= file.contents %></script>'))
+    , gulp
+      .src(
+        [ 'blocks/page/page.js'
+        , 'blocks/**/*.js'
+        ]
+      )
+      .pipe(uglify())
       .pipe(concat('index.js'))
-      .pipe(wrap('<script><%= contents %></script>'))
+      .pipe(wrap('<script><%= file.contents %></script>'))
   )
     .pipe(concat('index.html'))
     .pipe(gulp.dest('./'))
@@ -164,8 +162,8 @@ gulp.task('tdd', function (done) {
 })
 
 
-gulp.task('default', runSequence( 'config', 'index.html'))
+//gulp.task('default', runSequence( 'config', 'index.html'))
 
 
-gulp.task('watch', ['config', 'compress', 'index.min.html', 'watch'])
-gulp.task('nominify', ['config', 'index.html'])
+gulp.task('watch', [runSequence( 'config', 'index.min.html'), 'watch'])
+gulp.task('default', runSequence( 'config', 'index.min.html'))
