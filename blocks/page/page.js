@@ -40,19 +40,20 @@ var Team1 = {
    * Create interface for document
    */
   , buildDocumentInterface: function (document) {
-    var self = this // лучше сохранить this.dos и this.Editor
+    var doc = this.doc
 
     this.Roster = new Team1.Roster()
     this.Editor = new Team1.Editor()
 
-    this.doc.subscribe()
+    var Editor = this.Editor
 
-    this.doc.whenReady(function () {
-      // self.doc.type стоит сложить в переменную
-      if (!self.doc.type) self.doc.create('text')
+    doc.subscribe()
 
-      if (self.doc.type && self.doc.type.name === 'text')
-        self.doc.attachCodeMirror(self.Editor.codeEditor)
+    doc.whenReady(function () {
+      if (!doc.type) doc.create('text')
+
+      if (doc.type && doc.type.name === 'text')
+        doc.attachCodeMirror(Editor.codeEditor)
     })
 
     if (document.users)
@@ -166,8 +167,6 @@ var Team1 = {
             , dataType: 'json'
             , data: JSON.stringify(docContentObj)
             , success: function(doc) {
-                //console.log('success')
-                //console.log(doc.value);
                 if (doc !== null) {
                   Team1.Editor.codeEditor.getDoc().setValue(doc.value)
                 }

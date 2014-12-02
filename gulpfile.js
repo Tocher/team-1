@@ -41,6 +41,7 @@ gulp.task('index.min.html', function () {
       .pipe(gulp.dest('./dist/html'))
     , gulp
       .src('dist/html/**/*.html')
+      .pipe(gulpIgnore.exclude('**/page.html'))
       .pipe(wrap('<script '
           + 'type="template" '
           + 'id="<%= file.path.replace(/^.*\\/([^/]+)$/, \'$1\') %>">'
@@ -139,15 +140,6 @@ gulp.task('index.html', function () {
     .pipe(gulp.dest('./'))
 })
 
-gulp.task('watch', function () {
-  watch([ 'blocks/**/*.html'
-        , 'blocks/**/*.css'
-        , 'blocks/**/*.js']
-        , function () {
-    gulp.start('index.html')
-  })
-})
-
 gulp.task('test', function (done) {
   karma.start({
     configFile: __dirname + '/karma.conf.js',
@@ -162,8 +154,20 @@ gulp.task('tdd', function (done) {
 })
 
 
-//gulp.task('default', runSequence( 'config', 'index.html'))
+gulp.task('notmin', function() {
+  runSequence( 'config', 'index.html')
+})
 
+gulp.task('watch', function() {
+  runSequence( 'config', 'index.min.html')
+  watch([ 'blocks/**/*.html'
+        , 'blocks/**/*.css'
+        , 'blocks/**/*.js']
+        , function () {
+    gulp.start('index.min.html')
+  })
+})
 
-gulp.task('watch', [runSequence( 'config', 'index.min.html'), 'watch'])
-gulp.task('default', runSequence( 'config', 'index.min.html'))
+gulp.task('default', function() {
+  runSequence( 'config', 'index.min.html')
+})

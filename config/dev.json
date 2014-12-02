@@ -1,6 +1,6 @@
 {
   "http_server": {
-    "port": 8090,
+    "port": 80,
     "index": "index.html"
   },
   "socket_server": {
