@@ -56,11 +56,12 @@ window.sharejs.Doc.prototype._onMessage = function (msg) {
         break;
       }
 
-      if (this.inflightData) xf(this.inflightData, msg);
+      //console.log(this.inflightData, this.pendingData);
+      //if (this.inflightData) xf(this.inflightData, msg);
 
-      for (var i = 0; i < this.pendingData.length; i++) {
-        xf(this.pendingData[i], msg);
-      }
+      // for (var i = 0; i < this.pendingData.length; i++) {
+      //   xf(this.pendingData[i], msg);
+      // }
 
       this.version++;
       this._otApply(msg, false);

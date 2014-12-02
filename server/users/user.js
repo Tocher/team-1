@@ -7,66 +7,63 @@ var _ = require('lodash-node')
   , livedb = require('livedb')
   , sharejs = require('share')
   , backend = livedb.client(livedb.memory())
-  , share = sharejs.server.createClient(
-    { backend: backend
-    }
-  )
+  , share = sharejs.server.createClient({ backend: backend })
 
-  , getUID = function () {
-    return _.uniqueId()
-  }
+  , getUID = function () { return _.uniqueId('user-') }
+
   , Documents = require('../documents')
   , User = function (options) {
-    var self = this
+      var self = this
 
-    _.bindAll(this, 'onMessage')
+      // используется один раз, можно сделать bind там
+      _.bindAll(this, 'onMessage')
 
-    this._connection = options.connection
-    this._stream = new Duplex({ objectMode: true })
+      this._connection = options.connection // стоит сложить в переменную
+      this._stream = new Duplex({ objectMode: true }) // тоже в переменную
 
-    this.id = getUID()
-    this.document = null
-    this.props =
-    { title: 'Anonymous'
+      this.id = getUID()
+      this.document = null
+      this.props = { title: 'Anonymous' }
+
+      this._stream._write = function (chunk, encoding, callback) {
+        self._connection.send(JSON.stringify(chunk))
+
+        return callback()
+      }
+
+      this._stream._read = function () {}
+
+      this._stream.headers = this._connection.upgradeReq.headers
+      this._stream.remoteAddress =
+        this._connection.upgradeReq.connection.remoteAddress
+
+      this._connection.on('message', this.onMessage)
+
+      this._stream.on('error', function (msg) {
+        console.log('error', msg)
+        return self._connection.close(msg)
+      })
+
+      this._connection.on('close', function (reason) {
+        self._stream.push(null)
+        self._stream.emit('close')
+        self.destroy();
+        return self._connection.close( reason )
+      })
+
+      this._stream.on('end', function () { // можно делать чейнинг в вызовах on
+        return self._connection.close()
+      })
+
+      share.listen(this._stream)
     }
+  , proto = User.prototype // переменная не нужна, если использовать _.extend
 
-    this._stream._write = function (chunk, encoding, callback) {
-      self._connection.send(JSON.stringify(chunk))
-
-      return callback()
-    }
-
-    this._stream._read = function () {}
-
-    this._stream.headers = this._connection.upgradeReq.headers
-    this._stream.remoteAddress =
-      this._connection.upgradeReq.connection.remoteAddress
-
-    this._connection.on('message', this.onMessage)
-
-    this._stream.on('error', function (msg) {
-      console.log('error', msg)
-      return self._connection.close(msg)
-    })
-
-    this._connection.on('close', function (reason) {
-      self._stream.push(null)
-      self._stream.emit('close')
-      self.destroy();
-      return self._connection.close( reason )
-    })
-
-    this._stream.on('end', function () {
-      return self._connection.close()
-    })
-
-    share.listen(this._stream)
-  }
-  , proto = User.prototype
-
+// по аналогии с document.js можно делать прямо при объявлении переменной
 module.exports = User
 
 proto.onMessage = function (data) {
+  // вместо новой jsonData можно использовать data
   var jsonData = JSON.parse(data)
 
   if (jsonData.a === 'open')
@@ -109,9 +106,7 @@ proto.emit = function (data) {
  * @returns {{id: *}}
  */
 proto.exportOnlyId = function () {
-  return {
-    id: this.id
-  }
+  return { id: this.id }
 }
 
 /**
@@ -143,12 +138,11 @@ proto.exportPrivateData = function () {
  */
 proto.openDocument = function (document) {
   this.document = Documents.factory(document).addCollaborator(this)
-  this.emit({
-    a: 'open',
-    user: this.exportPrivateData(),
-    document: this.document.exportPublicData()
-  })
-  return this
+  this.emit({ a: 'open'
+            , user: this.exportPrivateData()
+            , document: this.document.exportPublicData()
+            })
+  return this // предыдущий вызов возвращает this
 }
 
 /**
@@ -171,9 +165,10 @@ proto.closeDocument = function () {
 proto.updateData = function (data) {
   delete data.id
 
-  _.extend(this.props, data, function (a, b) {
-    return b ? b : a
-  })
+  _.extend( this.props
+          , data
+          , function (a, b) { return b ? b : a }
+          )
 
   return this
 }
@@ -185,10 +180,9 @@ proto.updateData = function (data) {
  * @private
  */
 proto.onOpenEvent = function (data) {
-  if (data.user)
-    this.updateData(data.user)
+  if (data.user) this.updateData(data.user)
   this.openDocument(data.document)
-  return this
+  return this // предыдущий вызов возвращает this
 }
 
 proto.onMetaEvent = function (data) {
@@ -200,5 +194,5 @@ proto.onMetaEvent = function (data) {
  * Destroy info about user
  */
 proto.destroy = function () {
-  this.closeDocument()
+  this.closeDocument() // стоит по аналогии добавить return
 }

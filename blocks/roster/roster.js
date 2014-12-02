@@ -1,5 +1,3 @@
-var Team1 = Team1 || {}
-
 Team1.Roster = function () {
   this.usersListEl = $(".roster-list")
 

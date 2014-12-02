@@ -11,7 +11,8 @@
     "lint": "node_modules/.bin/jshint .",
     "codestyle": "node_modules/.bin/jscs .",
     "test": "node_modules/.bin/karma start karma.conf.js",
-    "gulp": "./node_modules/.bin/gulp"
+    "gulp": "./node_modules/.bin/gulp",
+    "watch": "./node_modules/.bin/gulp watch"
   },
   "repository": {
     "type": "git",

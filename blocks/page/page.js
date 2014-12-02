@@ -1,7 +1,6 @@
-var Team1 = Team1 || {}
 var Host = window.location.hostname + ':7900'
 
-Team1 = {
+var Team1 = {
   start: function (options) {
     _.bindAll(this)
 
@@ -41,18 +40,21 @@ Team1 = {
    * Create interface for document
    */
   , buildDocumentInterface: function (document) {
-    var self = this
+    var doc = this.doc
 
     this.Roster = new Team1.Roster()
-    this.Editor = new Team1.Editor()
+    this.Editor = new Team1.Editor(this)
+    this.Header = new Team1.Header(this)
 
-    this.doc.subscribe()
+    var Editor = this.Editor
 
-    this.doc.whenReady(function () {
-      if (!self.doc.type) self.doc.create('text')
+    doc.subscribe()
 
-      if (self.doc.type && self.doc.type.name === 'text')
-        self.doc.attachCodeMirror(self.Editor.codeEditor)
+    doc.whenReady(function () {
+      if (!doc.type) doc.create('text')
+
+      if (doc.type && doc.type.name === 'text')
+        doc.attachCodeMirror(Editor.codeEditor)
     })
 
     if (document.users)
@@ -98,6 +100,22 @@ Team1 = {
     }, 1000)
   }
 
+  , sendMeta: function (cursor, selection) {
+    var meta = {
+      a: "meta"
+      , document: {
+        id: this.documentId
+      }
+      , id: this.__user.id
+      , color: this.__user.color
+      , meta: { cursor: cursor
+              , selection: selection
+      }
+    }
+
+    this.send(JSON.stringify(meta));
+  }
+
   , waitForConnection: function (callback, interval) {
     var that = this
 
@@ -130,10 +148,22 @@ Team1 = {
   , onSocketMeta : function (data) {
     this.Editor.updateCursor(
       { id: data.id
-      , position : data.meta
+      , position : data.meta.cursor
       , color : data.color
       }
     )
+
+    
+    if (data.meta.selection) {
+      this.Editor.updateSelection(
+        { id: data.id
+        , position : data.meta.selection[0]
+        , color : data.color
+        }
+      )
+    }
+    else
+      this.Editor.removeSelection(data.id)
   }
 
   , saveDocument: function () {
@@ -143,32 +173,30 @@ Team1 = {
       , docContent: this.Editor.codeEditor.getValue()
     }
 
-    $.ajax({ type: "POST"
+    $.ajax({ type: 'POST'
             , url: window.location.pathname
             , data: JSON.stringify(docContentObj)
-            , success: function(data) {
-                console.log('success')
+            , success: function() {
+
             }
             , fail: function() {
-                console.log('error')
+
             }
         })
   }
 
-  , loadDocument: function (docId) {
+  , loadDocument: function () {
     var docContentObj = {
       operation: 'get'
       , docName: this.documentId
     }
 
-    $.ajax({ type: "POST"
+    $.ajax({ type: 'POST'
             , url: window.location.pathname
             , dataType: 'json'
             , data: JSON.stringify(docContentObj)
             , success: function(doc) {
-                console.log('success')
-                console.log(doc.value);
-                if (doc != null) {
+                if (doc !== null) {
                   Team1.Editor.codeEditor.getDoc().setValue(doc.value)
                 }
             }
