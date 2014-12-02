@@ -17,7 +17,7 @@
 }
 .cm-cursor-last {
   content: "";
-  border-left: 2px solid;
+  border-right: 2px solid;
 }
 .cm-cursor-red:before, .cm-cursor-last-red:after {
   border-color: red;

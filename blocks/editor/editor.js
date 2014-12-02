@@ -1,5 +1,3 @@
-var Team1 = Team1 || {}
-
 Team1.Editor = function () {
   _.bindAll(this, "onCursorActivity")
 

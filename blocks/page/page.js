@@ -1,7 +1,6 @@
-var Team1 = Team1 || {} // ниже полностью меняем переменную
 var Host = window.location.hostname + ':7900'
 
-Team1 = {
+var Team1 = {
   start: function (options) {
     _.bindAll(this)
 
@@ -148,10 +147,10 @@ Team1 = {
             , url: window.location.pathname
             , data: JSON.stringify(docContentObj)
             , success: function() {
-                console.log('success')
+
             }
             , fail: function() {
-                console.log('error')
+
             }
         })
   }
@@ -167,8 +166,8 @@ Team1 = {
             , dataType: 'json'
             , data: JSON.stringify(docContentObj)
             , success: function(doc) {
-                console.log('success')
-                console.log(doc.value);
+                //console.log('success')
+                //console.log(doc.value);
                 if (doc !== null) {
                   Team1.Editor.codeEditor.getDoc().setValue(doc.value)
                 }
