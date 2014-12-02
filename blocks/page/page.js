@@ -43,7 +43,8 @@ var Team1 = {
     var doc = this.doc
 
     this.Roster = new Team1.Roster()
-    this.Editor = new Team1.Editor()
+    this.Editor = new Team1.Editor(this)
+    this.Header = new Team1.Header(this)
 
     var Editor = this.Editor
 
@@ -99,6 +100,22 @@ var Team1 = {
     }, 1000)
   }
 
+  , sendMeta: function (cursor, selection) {
+    var meta = {
+      a: "meta"
+      , document: {
+        id: this.documentId
+      }
+      , id: this.__user.id
+      , color: this.__user.color
+      , meta: { cursor: cursor
+              , selection: selection
+      }
+    }
+
+    this.send(JSON.stringify(meta));
+  }
+
   , waitForConnection: function (callback, interval) {
     var that = this
 
@@ -131,10 +148,22 @@ var Team1 = {
   , onSocketMeta : function (data) {
     this.Editor.updateCursor(
       { id: data.id
-      , position : data.meta
+      , position : data.meta.cursor
       , color : data.color
       }
     )
+
+    
+    if (data.meta.selection) {
+      this.Editor.updateSelection(
+        { id: data.id
+        , position : data.meta.selection[0]
+        , color : data.color
+        }
+      )
+    }
+    else
+      this.Editor.removeSelection(data.id)
   }
 
   , saveDocument: function () {

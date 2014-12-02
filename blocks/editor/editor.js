@@ -1,5 +1,6 @@
-Team1.Editor = function () {
+Team1.Editor = function (app) {
   _.bindAll(this, "onCursorActivity")
+  this.app = app;
 
   this.codeEditor = CodeMirror.fromTextArea($("#docEditor")[0],
     {
@@ -7,31 +8,20 @@ Team1.Editor = function () {
       , matchBrackets: true
       , foldGutter: true        //сворачивание кода
       , mode: "javascript"
-    })
-
-  this.getThemesList()
-
-  this.changeEditorMode()
-
-  this.getDefaultEditorMode()
+    })  
 
   this.codeEditor.on("cursorActivity", this.onCursorActivity)
   this.cursors = []
   this.selections = []
 }
 
-Team1.Editor.prototype.onCursorActivity = function () {
-  var cursor = this.codeEditor.getCursor()
-  var meta = {
-    a: "meta"
-    , document: {
-      id: Team1.documentId
-    }
-    , id: Team1.__user.id
-    , color: Team1.__user.color
-    , meta: cursor
-  }
-  Team1.send(JSON.stringify(meta))
+Team1.Editor.prototype.onCursorActivity = function () {      
+  var selection = this.codeEditor.getSelection()
+  if(selection !== "")
+    selection = this.codeEditor.listSelections()
+  else
+    selection = null
+  this.app.sendMeta(this.codeEditor.getCursor(), selection)
 }
 
 Team1.Editor.prototype.addCursor = function (cursorInfo) {
@@ -89,7 +79,20 @@ Team1.Editor.prototype.addSelection = function (selectionInfo) {
     className: this.getSelectionClass(selectionInfo.id, selectionInfo.color)
   }
 
-  var sel = this.codeEditor.markText(selectionInfo.from, selectionInfo.to, opt)
+  var anchor = selectionInfo.position.anchor
+  var head = selectionInfo.position.head
+
+  if((anchor.line === head.line && anchor.ch > head.ch) || (anchor.line > head.line))    
+  {
+    var tmp = selectionInfo.position.anchor
+    selectionInfo.position.anchor = selectionInfo.position.head
+    selectionInfo.position.head = tmp
+  }
+
+  var sel = this.codeEditor.markText( selectionInfo.position.anchor
+                                    , selectionInfo.position.head
+                                    , opt
+                                    )
   this.selections.push({id: selectionInfo.id, sel: sel})
 }
 
@@ -100,6 +103,7 @@ Team1.Editor.prototype.getSelectionClass = function (id, color) {
 Team1.Editor.prototype.updateSelection = function (selectionInfo) {
   this.removeSelection(selectionInfo.id)
   this.addSelection(selectionInfo)
+  $(".selection-id-"+selectionInfo.id+"").css("background-color",selectionInfo.color)
 }
 
 Team1.Editor.prototype.removeSelection = function (id) {
@@ -108,85 +112,5 @@ Team1.Editor.prototype.removeSelection = function (id) {
       this.selections[i].sel.clear()
       this.selections.splice(i, 1)
     }
-  }
-}
-
-Team1.Editor.prototype.getThemesList = function () {
-  var self = this
-
-  $.get("/theme", function (data) {
-    self.themesList = JSON.parse(data)
-  }).done(function () {
-    self.setThemesList()
-  })
-}
-
-Team1.Editor.prototype.setThemesList = function () {
-  var $themesList = $(".control__themelist")
-
-  this.themesList.forEach(function (theme) {
-    $themesList.append("<option>" + theme.slice(0, -4) + "</option>")
-  })
-
-  $("body").append("<style class='theme_style'>")
-
-  this.addHandlerToThemeOption()
-}
-
-Team1.Editor.prototype.addHandlerToThemeOption = function () {
-  var self = this
-    , theme
-    , $themesList = $(".control__themelist")
-
-  $themesList.on("change", function () {
-    theme = $(this).find("option:selected").text()
-
-    self.setTheme(theme)
-  })
-}
-
-Team1.Editor.prototype.setTheme = function (theme) {
-  var self = this
-
-  $.get("/theme", {name: theme})
-    .done(function (data) {
-      $(".theme_style").text(JSON.parse(data))
-      self.codeEditor.setOption("theme", theme)
-    }).fail(function () {
-      console.log("Error downloading theme")
-    })
-}
-
-Team1.Editor.prototype.changeEditorMode = function () {
-  var $header = $(".header")
-    , $roster = $(".roster")
-
-  $(".js-editor-mode-switch").on("change", function () {
-    if ($(this).is(":checked")) {
-      $header.removeClass("header--dark").addClass("header--light")
-      $roster.removeClass("roster--dark").addClass("roster--light")
-    } else {
-      $header.removeClass("header--light").addClass("header--dark")
-      $roster.removeClass("roster--light").addClass("roster--dark")
-    }
-  })
-}
-
-Team1.Editor.prototype.getDefaultEditorMode = function () {
-  var editorMode = "light" //light or dark
-
-  this.setDefaultEditorMode(editorMode);
-}
-Team1.Editor.prototype.setDefaultEditorMode = function (editorMode) {
-  var $header = $(".header")
-    , $roster = $(".roster")
-    , $switchMode = $(".js-editor-mode-switch")
-
-  $header.addClass("header--" + editorMode)
-  $roster.addClass("roster--" + editorMode)
-
-  if (editorMode == "light") {
-    // $switchMode.prop("checked", true) // don't work
-    $switchMode.click();
   }
 }
