@@ -1,7 +1,3 @@
-/**
- * Created by Mantsevich on 21.10.2014.
- */
-
 var _ = require('lodash-node')
   , Duplex = require('stream').Duplex
   , livedb = require('livedb')
@@ -63,19 +59,18 @@ var _ = require('lodash-node')
 module.exports = User
 
 proto.onMessage = function (data) {
-  // вместо новой jsonData можно использовать data
-  var jsonData = JSON.parse(data)
+  data = JSON.parse(data)
 
-  if (jsonData.a === 'open')
-  { this.onOpenEvent(jsonData)
+  if (data.a === 'open')
+  { this.onOpenEvent(data)
     return;
   }
-  if (jsonData.a === 'meta')
-  { this.onMetaEvent(jsonData)
+  if (data.a === 'meta')
+  { this.onMetaEvent(data)
     return;
   }
 
-  return this._stream.push(jsonData)
+  return this._stream.push(data)
 }
 
 proto.getColor = function () {
@@ -86,33 +81,15 @@ proto.setColor = function (color) {
   this.color = color
 }
 
-/**
- * Fire event on client (Unsafe!) TODO: Discuss with Team
- * @param event
- * @param data
- * @returns {User}
- */
 proto.emit = function (data) {
   this._connection.send(JSON.stringify(data))
   return this
 }
-//endregion
 
-
-//region *** Exports data API ***
-
-/**
- * Simple export
- * @returns {{id: *}}
- */
 proto.exportOnlyId = function () {
   return { id: this.id }
 }
 
-/**
- * Public data for other users
- * @returns {Object|*}
- */
 proto.exportPublicData = function () {
   return _.extend(this.exportOnlyId(),
     { title: this.props.title
@@ -121,21 +98,10 @@ proto.exportPublicData = function () {
   )
 }
 
-/**
- * Private data for owner
- * @returns {Object|*}
- */
 proto.exportPrivateData = function () {
   return _.extend(this.exportPublicData(), {})
 }
-//endregion
 
-
-//region *** Document API ***
-/**
- * Open document
- * @param document {Document}
- */
 proto.openDocument = function (document) {
   this.document = Documents.factory(document).addCollaborator(this)
   this.emit({ a: 'open'
@@ -145,23 +111,11 @@ proto.openDocument = function (document) {
   return this // предыдущий вызов возвращает this
 }
 
-/**
- * Close last opened document
- */
 proto.closeDocument = function () {
   if (this.document !== null) this.document.removeCollaborator(this)
   return this
 }
-//endregion
 
-
-//region *** Common API & Helpers ***
-
-/**
- * Update user data/props
- * @param data
- * @returns {User}
- */
 proto.updateData = function (data) {
   delete data.id
 
@@ -173,12 +127,6 @@ proto.updateData = function (data) {
   return this
 }
 
-/**
- * Helper for our API
- * @param data
- * @returns {User}
- * @private
- */
 proto.onOpenEvent = function (data) {
   if (data.user) this.updateData(data.user)
   this.openDocument(data.document)
@@ -190,9 +138,7 @@ proto.onMetaEvent = function (data) {
   return this
 }
 
-/**
- * Destroy info about user
- */
 proto.destroy = function () {
-  this.closeDocument() // стоит по аналогии добавить return
+  this.closeDocument()
+  return this
 }

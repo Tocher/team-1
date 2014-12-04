@@ -4,8 +4,6 @@ var Team1 = {
   start: function (options) {
     _.bindAll(this)
 
-    new Switchery(document.querySelector('.js-switch'))
-
     this.documentId = this.getDocId()
 
     this.socket = this.getSocket(options.socketUrl)
@@ -153,7 +151,7 @@ var Team1 = {
       }
     )
 
-    
+
     if (data.meta.selection) {
       this.Editor.updateSelection(
         { id: data.id

@@ -1,6 +1,8 @@
 Team1.Header = function (app) {
   this.app = app
 
+  new Switchery(document.querySelector('.js-switch'))
+
   this.getThemesList()
 
   this.changeEditorMode()

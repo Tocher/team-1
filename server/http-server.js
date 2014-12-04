@@ -1,8 +1,9 @@
 var http = require('http')
   , url = require('url')
   , fs = require('fs')
-  , log = require('npmlog') // актуальна переменная logPrefix
-  , isStarted = !1 // false
+  , log = require('npmlog')
+  , logPrefix = 'HTTP server'
+  , isStarted = false
   , path = require('path')
 
 exports.start = function (config) {
@@ -13,25 +14,21 @@ exports.start = function (config) {
 
         var urlParsed = url.parse(request.url, true)
 
-        // urlParsed.query.name стоит вынести в переменную
-        if (urlParsed.pathname == '/theme' && urlParsed.query.name) {
-          var themePath = 'libs/codemirror/theme/' + urlParsed.query.name
+        var urlParsedName = urlParsed.query.name
+        if (urlParsed.pathname == '/theme' && urlParsedName) {
+          var themePath = 'libs/codemirror/theme/' + urlParsedName
 
           fs.readFile(themePath + '.css', 'utf8',  function (err, data) {
             if (err) throw err
 
-            response.write(JSON.stringify(data))
-            // http://nodejs.org/api/http.html#http_response_end_data_encoding
-            response.end() // можно сделать response.end(JSON.stringify(data))
-                           // тут и ниже
+            response.end(JSON.stringify(data))
           })
         }
-        else if (urlParsed.pathname == '/theme' && !urlParsed.query.name) {
+        else if (urlParsed.pathname == '/theme' && !urlParsedName) {
           fs.readdir('libs/codemirror/theme/', function (err, files) {
             if (err) throw err
 
-            response.write(JSON.stringify(files))
-            response.end()
+            response.end(JSON.stringify(files))
           })
         }
         else if (request.method == 'POST') {
@@ -45,9 +42,7 @@ exports.start = function (config) {
               saveDocument(jsonBody)
             }
             else if (jsonBody.operation == 'get') {
-              //console.log('getDocument ' + jsonBody.docName)
               var docContent = getDocument(jsonBody.docName)
-              //console.log(docContent)
               var docObj = {
                 value: docContent
               }
@@ -55,11 +50,7 @@ exports.start = function (config) {
               var docJSON = JSON.stringify(docObj)
 
               if (docJSON !== null) {
-                //response.writeHead( 200
-                //                  , { 'Content-Type': 'application/json' }
-                //                  )
                 console.log(docJSON)
-                //response.write(docJSON)
                 response.end(docJSON)
               }
               else {
@@ -75,7 +66,7 @@ exports.start = function (config) {
           //reading index file
           fs.readFile(config.index, function (err, page) {
             if (err) {
-              log.error('HTTP server', err.message)
+              log.error(logPrefix, err.message)
               response.writeHeader(500)
               response.end('Can\'t read ' + config.index +
                            ' file. (Try to create it: npm run make)')
@@ -83,15 +74,14 @@ exports.start = function (config) {
             }
 
             response.writeHeader(200, {'Content-Type': 'text/html'})
-            response.write(page)
-            response.end()
+            response.end(page)
           })
         }
       }).listen(config.port)
-      log.info('HTTP server', 'Server started at port ' + config.port)
-      isStarted = !0 // true
+      log.info(logPrefix, 'Server started at port ' + config.port)
+      isStarted = true
     } catch (e) {
-      log.error('HTTP server', 'Server can\'t start. ' + e)
+      log.error(logPrefix, 'Server can\'t start. ' + e)
     }
   }
 }
