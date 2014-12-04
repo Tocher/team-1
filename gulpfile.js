@@ -51,6 +51,7 @@ gulp.task('index.min.html', function () {
     // Css
     , gulp.src(
         [ 'libs/codemirror/lib/codemirror.css'
+        , 'libs/codemirror/addon/fold/foldgutter.css'
         , 'libs/switchery/dist/switchery.min.css'
         , 'blocks/**/*.css'
         ]
@@ -74,6 +75,10 @@ gulp.task('index.min.html', function () {
         , 'node_modules/share/webclient/share.js'
         , 'libs/share-codemirror/share-codemirror.js'
         , 'libs/codemirror/mode/javascript/javascript.js'
+        , 'libs/codemirror/addon/fold/foldcode.js'
+        , 'libs/codemirror/addon/fold/comment-fold.js'
+        , 'libs/codemirror/addon/fold/brace-fold.js'
+        , 'libs/codemirror/addon/fold/foldgutter.js'
         , 'libs/lodash/dist/lodash.min.js'
         , 'libs/switchery/dist/switchery.min.js'
         ]

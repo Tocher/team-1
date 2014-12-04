@@ -5,17 +5,19 @@ Team1.Editor = function (app) {
   this.codeEditor = CodeMirror.fromTextArea($("#docEditor")[0],
     {
       lineNumbers: true
+      , lineWrapping: true
       , matchBrackets: true
       , foldGutter: true        //сворачивание кода
+      , gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"]
       , mode: "javascript"
-    })  
+    })
 
   this.codeEditor.on("cursorActivity", this.onCursorActivity)
   this.cursors = []
   this.selections = []
 }
 
-Team1.Editor.prototype.onCursorActivity = function () {      
+Team1.Editor.prototype.onCursorActivity = function () {
   var selection = this.codeEditor.getSelection()
   if(selection !== "")
     selection = this.codeEditor.listSelections()
@@ -82,7 +84,7 @@ Team1.Editor.prototype.addSelection = function (selectionInfo) {
   var anchor = selectionInfo.position.anchor
   var head = selectionInfo.position.head
 
-  if((anchor.line === head.line && anchor.ch > head.ch) || (anchor.line > head.line))    
+  if((anchor.line === head.line && anchor.ch > head.ch) || (anchor.line > head.line))
   {
     var tmp = selectionInfo.position.anchor
     selectionInfo.position.anchor = selectionInfo.position.head
