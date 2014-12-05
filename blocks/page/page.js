@@ -221,32 +221,48 @@ var Team1 = {
   }
 }
 
+function enterCheck(e) {
+  if (e.keyCode == 13) {
+      $("#modal_submit").click()
+      return false;
+  }
+}
+
 $(document).ready(function () {
   var socketUrlString = 'http://' + Host
   Team1.start({
     socketUrl: socketUrlString
   })
+  // setInterval(function() {
+  //   var state = Team1.socket.readyState
+  //   console.log(state)
+  //   if(state === Team1.socket.CLOSED && state !== Team1.socket.CONNECTING) {
+  //     Team1.reconnect({
+  //       socketUrl: socketUrlString
+  //     })
+  //   }
+  // }, 5000)
 
   // switch for socket connection
   new Switchery(document.querySelector('.js-connect'))
   $connectMode = $(".js-connection-switch")
-  $connectMode.click();
   $connectMode.on("change", function () {
     if ($(this).is(":checked")) {
+      Team1.socket.close()
+    }
+    else {
       Team1.reconnect({
         socketUrl: socketUrlString
       })
-    }
-    else {
-      Team1.socket.close()
     }
   })
 
   // Modal window for auth
   var username = $("#modal_username")
+    , modalBtn = $("#modal_submit")
   username.focus()
 
-  $("#modal_submit").click(function() {
+  modalBtn.click(function() {
     var user = {
       title: username.val()
     }
