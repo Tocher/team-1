@@ -13,7 +13,7 @@ var Team1 = {
 
     this.bindSocketHandlers()
 
-    this.auth().done(this.openDocument)
+    //this.auth().done(this.openDocument)
   }
   , reconnect: function (options) {
     this.socket = this.getSocket(options.socketUrl)
@@ -222,16 +222,39 @@ var Team1 = {
 }
 
 $(document).ready(function () {
+  var socketUrlString = 'http://' + Host
   Team1.start({
-    socketUrl: 'http://' + Host
+    socketUrl: socketUrlString
   })
-  $(".control__close-connection").click(function() {
-    Team1.socket.close()
+
+  // switch for socket connection
+  new Switchery(document.querySelector('.js-connect'))
+  $connectMode = $(".js-connection-switch")
+  $connectMode.click();
+  $connectMode.on("change", function () {
+    if ($(this).is(":checked")) {
+      Team1.reconnect({
+        socketUrl: socketUrlString
+      })
+    }
+    else {
+      Team1.socket.close()
+    }
   })
-  $(".control__open-connection").click(function() {
-    Team1.reconnect({
-      socketUrl: 'http://' + Host
-    })
+
+  // Modal window for auth
+  var username = $("#modal_username")
+  username.focus()
+
+  $("#modal_submit").click(function() {
+    var user = {
+      title: username.val()
+    }
+    username.val("")
+
+    Team1.__user = user
+    Team1.openDocument()
+    $(".modal").hide()
   })
 })
 

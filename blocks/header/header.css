@@ -82,6 +82,8 @@
 .control__editor-mode {
   vertical-align: middle;
   margin: 0 10px;
+  color: #6C7A89;
+  font-family: Verdana;
 }
 
 .control__editor-mode img {

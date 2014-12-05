@@ -54,4 +54,30 @@ html {
 body {
   height: 100%;
 }
-
+.modal {
+    background-color: #ECF0F1;
+    display: inline-block;
+    left: 50%; color:#666;
+    padding: 25px 35px;
+    position: fixed;
+    text-align: justify;
+    top: 40%;
+    z-index: 10;
+    max-height: 80%;
+    overflow: auto;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 3px 4px -3px rgba(0,0,0,.3);
+  -moz-box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 3px 4px -3px rgba(0,0,0,.3);
+  -ms-box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 3px 4px -3px rgba(0,0,0,.3);
+    -o-box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 3px 4px -3px rgba(0,0,0,.3);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.1),0 3px 4px -3px rgba(0,0,0,.3);
+    -webkit-transition: opacity .5s, top .5s;
+    -moz-transition: opacity .5s, top .5s;
+    -ms-transition: opacity .5s, top .5s;
+    -o-transition: opacity .5s, top .5s;
+    transition: opacity .5s, top .5s;
+}
