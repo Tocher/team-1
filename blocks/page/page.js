@@ -5,6 +5,7 @@ var Team1 = {
     _.bindAll(this)
 
     this.documentId = this.getDocId()
+    this.isReconnect = false
 
     this.socket = this.getSocket(options.socketUrl)
     this.sjs = new window.sharejs.Connection(this.socket)
@@ -13,6 +14,14 @@ var Team1 = {
     this.bindSocketHandlers()
 
     this.auth().done(this.openDocument)
+  }
+  , reconnect: function (options) {
+    this.socket = this.getSocket(options.socketUrl)
+    this.sjs = new window.sharejs.Connection(this.socket)
+    this.doc = this.sjs.get('users-' + this.documentId, 'seph')
+
+    this.isReconnect = true
+    this.openDocument()
   }
   , getDocId: function () {
     return this.getDocIdFromHash() || _.random(10000000000)
@@ -40,9 +49,11 @@ var Team1 = {
   , buildDocumentInterface: function (document) {
     var doc = this.doc
 
-    this.Roster = new Team1.Roster()
-    this.Editor = new Team1.Editor(this)
-    this.Header = new Team1.Header(this)
+    if(!this.isReconnect) {
+      this.Roster = new Team1.Roster()
+      this.Editor = new Team1.Editor(this)
+      this.Header = new Team1.Header(this)
+    }
 
     var Editor = this.Editor
 
@@ -55,8 +66,10 @@ var Team1 = {
         doc.attachCodeMirror(Editor.codeEditor)
     })
 
-    if (document.users)
+    if (document.users) {
+      this.Roster.clearList()
       this.Roster.fillList(document.users)
+    }
 
     if (document.id) {
       window.location.hash = '#' + document.id
@@ -110,8 +123,8 @@ var Team1 = {
               , selection: selection
       }
     }
-
-    this.send(JSON.stringify(meta));
+    if(this.socket.readyState == this.socket.OPEN)
+      this.send(JSON.stringify(meta))
   }
 
   , waitForConnection: function (callback, interval) {
@@ -150,7 +163,6 @@ var Team1 = {
       , color : data.color
       }
     )
-
 
     if (data.meta.selection) {
       this.Editor.updateSelection(
@@ -194,7 +206,7 @@ var Team1 = {
             , dataType: 'json'
             , data: JSON.stringify(docContentObj)
             , success: function(doc) {
-                if (doc !== null) {
+                if (doc.value != null) {
                   Team1.Editor.codeEditor.getDoc().setValue(doc.value)
                 }
             }
@@ -212,6 +224,14 @@ var Team1 = {
 $(document).ready(function () {
   Team1.start({
     socketUrl: 'http://' + Host
+  })
+  $(".control__close-connection").click(function() {
+    Team1.socket.close()
+  })
+  $(".control__open-connection").click(function() {
+    Team1.reconnect({
+      socketUrl: 'http://' + Host
+    })
   })
 })
 

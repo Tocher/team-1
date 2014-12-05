@@ -71,6 +71,7 @@ gulp.task('index.min.html', function () {
     , gulp
       .src(
         [ 'libs/jquery/dist/jquery.min.js'
+        , 'node_modules/diff/diff.js'
         , 'libs/codemirror/lib/codemirror.js'
         , 'node_modules/share/webclient/share.js'
         , 'libs/share-codemirror/share-codemirror.js'

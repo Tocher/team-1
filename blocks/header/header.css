@@ -88,6 +88,23 @@
   vertical-align: middle;
 }
 
+.control__open-connection, .control__close-connection {
+  position: relative;
+  vertical-align: middle;
+  border-radius: 100%;
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+}
+.control__open-connection {
+  background: green;
+}
+.control__close-connection {
+  margin-left: 50px;
+  background: red;
+}
+
 .header--dark {
   background-color: #293143;
   border-bottom: 1px solid #212936;

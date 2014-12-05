@@ -20,6 +20,10 @@ Team1.Roster.prototype.fillList = function (usersList) {
   })
 }
 
+Team1.Roster.prototype.clearList = function () {
+  this.usersListEl.html("")
+}
+
 Team1.Roster.prototype.getUsersCount = function () {
 	return $(".roster-list li").length;
 }

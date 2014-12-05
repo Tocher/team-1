@@ -13,7 +13,21 @@ window.sharejs.Doc.prototype._onMessage = function (msg) {
       break;
 
     case 'sub':
+      if(Team1.isReconnect) {
+        var diff = JsDiff.diffChars(msg.data.data, Team1.Editor.codeEditor.getValue())
+        var newData = ""
+        diff.forEach(function(part){
+          if(part.added)
+            newData += "\n\/* added in offline mode by: " + Team1.__user.title + "\n" + part.value + "\n*\/\n"
+          else if(part.removed)
+            newData += "\n\/* >> merge conflict \n" + part.value + "\n>>*\/\n"
+          else
+            newData += part.value
+        })
+        msg.data.data = newData
+      }
       this._handleSubscribe(msg.error, msg.data);
+      Team1.Editor.codeEditor.setValue(msg.data.data)
       break;
 
     case 'unsub':
